@@ -71,7 +71,7 @@ public class Camt054Parser {
 		List<AccountNotification12> notifications = doc.getBkToCstmrDbtCdtNtfctn().getNtfctn();
 		
 		for (AccountNotification12 accountNotification12 : notifications) {
-
+			
 			// B- LEVEL
 			//Erstellungsdatum und -zeit des Kontoauszugs
 			XMLGregorianCalendar credDate = accountNotification12.getCreDtTm();
@@ -120,21 +120,19 @@ public class Camt054Parser {
 							
 							//ESR-Referenznummer oder Creditor Reference nach ISO11649
 							String ref = creditorReferenceInformation2.getRef();
-							records.add(new Camt054Record(storno ? "005" : "002",
-								amount.movePointRight(2).toString().replaceAll("[\\.,]", ""), ref,
-								esrTn,
-								readDate.toGregorianCalendar().getTime(),
-								bookingDate.getDt().toGregorianCalendar().getTime(),
-								valDate.getDt().toGregorianCalendar().getTime()));
+							records
+								.add(new Camt054Record(storno ? "005" : "002", formatAmount(amount),
+									ref, esrTn, readDate.toGregorianCalendar().getTime(),
+									bookingDate.getDt().toGregorianCalendar().getTime(),
+									valDate.getDt().toGregorianCalendar().getTime()));
 						}
 					}
 				}
 				
 				// sammelgutschrift
 				records.add(new Camt054Record("999",
-					entryAmt != null ? entryAmt.getValue().movePointRight(2).toString()
-						.replaceAll("[\\.,]", "") : null,
-					null, esrTn, credDate.toGregorianCalendar().getTime(),
+					formatAmount(entryAmt != null ? entryAmt.getValue() : null), null, esrTn,
+					credDate.toGregorianCalendar().getTime(),
 					credDate.toGregorianCalendar().getTime(),
 					credDate.toGregorianCalendar().getTime()));
 			}
@@ -142,6 +140,13 @@ public class Camt054Parser {
 		}
 		
 		return records;
+	}
+	
+	public String formatAmount(BigDecimal amount){
+		if (amount != null) {
+			return amount.movePointRight(2).toString().replaceAll("[\\.,]", "");
+		}
+		return null;
 	}
 	
 }
